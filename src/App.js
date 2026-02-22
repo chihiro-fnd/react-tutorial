@@ -8,10 +8,7 @@ function Square ({value, onSquareClick}) {
   ) 
 }
 
-export default function Board() {
-  const [xIsNext, setXIsNext] = useState(true);
-  const [squares, setSquares] = useState(Array(9).fill(null));
-
+function Board({ xIsNext, squares, onPlay }) {
   function handleClick(i) {
     if (squares[i] || calculateWinner(squares)) {
       return;
@@ -22,8 +19,7 @@ export default function Board() {
     } else {
       nextSquares[i] = 'O';
     }
-    setSquares(nextSquares);
-    setXIsNext(!xIsNext);
+    onPlay(nextSquares);
   }
 
   const winner = calculateWinner(squares);
@@ -77,4 +73,49 @@ function calculateWinner(squares) {
   }
   // 3つ揃ってなければ対戦中or引き分け
   return null;
+}
+
+export default function Game() {
+  const [xIsNext, setXisNext] = useState(true);
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const currentSquares = history[history.length - 1];
+
+  function handlePlay(nextSquares) {
+    // historyを更新して、新しいsquares配列を追加する
+    setHistory([...history, nextSquares]);
+    // xIsNextを切り替える
+    setXisNext(!xIsNext);
+  }
+
+  function jumpTo(nextMove) {
+    // historyの配列から、指定されたmoveに対応するsquaresを取得して、currentSquaresを更新する
+    setHistory(history.slice(0, nextMove + 1));
+    // xIsNextを、moveが偶数のときはtrue、奇数のときはfalseに設定する
+    setXisNext(nextMove % 2 === 0);
+  }
+
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = 'Go to move #' + move;
+    } else {
+      description = 'Go to game start';
+    }
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
 }
