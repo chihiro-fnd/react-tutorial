@@ -78,18 +78,22 @@ function calculateWinner(squares) {
 export default function Game() {
   const [xIsNext, setXisNext] = useState(true);
   const [history, setHistory] = useState([Array(9).fill(null)]);
-  const currentSquares = history[history.length - 1];
+  const [currentMove, setCurrentMove] = useState(0);
+  // Gameコンポーネントを変更し、現在選択されている着手をレンダーするようにする
+  const currentSquares = history[currentMove];
 
   function handlePlay(nextSquares) {
-    // historyを更新して、新しいsquares配列を追加する
-    setHistory([...history, nextSquares]);
+    // 履歴のうち着手時点までの部分のみが保持されるようにする
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
     // xIsNextを切り替える
     setXisNext(!xIsNext);
   }
 
   function jumpTo(nextMove) {
-    // historyの配列から、指定されたmoveに対応するsquaresを取得して、currentSquaresを更新する
-    setHistory(history.slice(0, nextMove + 1));
+    // 現在の手数を更新する
+    setCurrentMove(nextMove);
     // xIsNextを、moveが偶数のときはtrue、奇数のときはfalseに設定する
     setXisNext(nextMove % 2 === 0);
   }
